@@ -1,0 +1,64 @@
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;         
+    justify-content: center;     
+    text-align: center;
+    height: 100vh;               
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.dashboard-title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    background: linear-gradient(90deg, #ff7b00, #ff0066, #8e2de2, #4a00e0);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+
+.dashboard-subtitle {
+    font-size: 1.4rem;
+    font-weight: 600;
+    max-width: 800px;
+    line-height: 1.6;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px #6a11cb, 0 0 20px #2575fc;
+    }
+    to {
+        text-shadow: 0 0 20px #6a11cb, 0 0 30px #2575fc;
+    }
+}
+
+@media (max-width: 768px) {
+  .dashboard-title {
+    font-size: 2rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: 1.1rem;
+  }
+}
+
+.dashboard-button-group {
+    margin-top: 2rem;
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.dashboard-button-group button {
+  min-width: 120px;
+}
