@@ -1,52 +1,36 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Form, Button, Row, Col, Card } from "react-bootstrap";
+import React, { useState, useEffect, useContext } from "react";
+import { Button, Row, Col } from "react-bootstrap";
+import { useNavigate } from "react-router";
 import AccountCard from "./AccountCard";
+import AddAccountModal from "./AddAccountModal";
+import FinanceLoginStatusContext from "../contexts/FinanceLoginStatusContext";
 
 export default function AccountManager() {
     const [accounts, setAccounts] = useState(() => {
-    const stored = localStorage.getItem("accounts");
-    return stored ? JSON.parse(stored) : [];
+        const stored = localStorage.getItem("accounts");
+        return stored ? JSON.parse(stored) : [];
     });
 
+    const [showModal, setShowModal] = useState(false);
+    const [cardType, setCardType] = useState("debit");
 
-    const bankRef = useRef();
-    const cardNumRef = useRef();
-    const holderRef = useRef();
-    const currencyRef = useRef();
-    const expireRef = useRef();
-    const nicknameRef = useRef();
-    
+    const [loginStatus] = useContext(FinanceLoginStatusContext);
+    const navigate = useNavigate();
+
+    // 🔐 如果未登录，跳转至 login 页面
+    useEffect(() => {
+        if (!loginStatus) {
+            navigate("/login");
+        }
+    }, [loginStatus, navigate]);
+
     useEffect(() => {
         localStorage.setItem("accounts", JSON.stringify(accounts));
     }, [accounts]);
 
-    function handleAdd(e) {
-        e.preventDefault();
-
-        const newAccount = {
-        id: Date.now(),
-        bank: bankRef.current.value,
-        cardNumber: cardNumRef.current.value,
-        holder: holderRef.current.value,
-        currency: currencyRef.current.value,
-        expire: expireRef.current.value,
-        nickname: nicknameRef.current.value,
-        expanded: false
-        };
-
-        setAccounts(prev => [...prev, newAccount]);
-
-        bankRef.current.value = "";
-        cardNumRef.current.value = "";
-        holderRef.current.value = "";
-        currencyRef.current.value = "";
-        expireRef.current.value = "";
-        nicknameRef.current.value = "";
-    }
-
     function toggleDetail(id) {
         setAccounts(prev =>
-        prev.map(acc => acc.id === id ? { ...acc, expanded: !acc.expanded } : acc)
+            prev.map(acc => acc.id === id ? { ...acc, expanded: !acc.expanded } : acc)
         );
     }
 
@@ -54,57 +38,61 @@ export default function AccountManager() {
         setAccounts(prev => prev.filter(acc => acc.id !== id));
     }
 
+    function handleAddAccount(newAccount) {
+        setAccounts(prev => [...prev, newAccount]);
+        setShowModal(false);
+    }
+
     return (
         <>
-        <h1>Account Manager</h1>
-        <Row>
-            <Col md={6}>
-            <Form onSubmit={handleAdd}>
-                <Form.Group>
-                <Form.Label>Bank Name</Form.Label>
-                <Form.Control type="text" ref={bankRef} />
-                </Form.Group>
-                <Form.Group>
-                <Form.Label>Card Number</Form.Label>
-                <Form.Control type="text" ref={cardNumRef} />
-                </Form.Group>
-                <Form.Group>
-                <Form.Label>Card Holder</Form.Label>
-                <Form.Control type="text" ref={holderRef} />
-                </Form.Group>
-                <Form.Group>
-                <Form.Label>Currency</Form.Label>
-                <Form.Control type="text" ref={currencyRef} />
-                </Form.Group>
-                <Form.Group>
-                <Form.Label>Expire Date</Form.Label>
-                <Form.Control type="text" ref={expireRef} />
-                </Form.Group>
-                <Form.Group>
-                <Form.Label>Card Nickname</Form.Label>
-                <Form.Control type="text" ref={nicknameRef} />
-                </Form.Group>
-                <br />
-                <Button type="submit" className="w-100">Add Account</Button>
-            </Form>
-            </Col>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h1>Account Manager</h1>
+                <div>
+                    <Button
+                        variant="success"
+                        className="me-2"
+                        onClick={() => {
+                            setCardType("debit");
+                            setShowModal(true);
+                        }}
+                    >
+                        + Add Debit Card
+                    </Button>
+                    <Button
+                        variant="warning"
+                        onClick={() => {
+                            setCardType("credit");
+                            setShowModal(true);
+                        }}
+                    >
+                        + Add Credit Card
+                    </Button>
+                </div>
+            </div>
 
-            <Col md={3}>
             <Row>
-                {
-                accounts.map(acc => (
-                    <Col key={acc.id} md={12} className="mb-3">
-                    <AccountCard
-                        account={acc}
-                        onToggle={toggleDetail}
-                        onDelete={handleDelete}
-                    />
-                    </Col>
-                ))
-                }
+                <Col md={9}>
+                    <Row>
+                        {accounts.map(acc => (
+                            <Col key={acc.id} md={6} lg={4} className="mb-3">
+                                <AccountCard
+                                    account={acc}
+                                    onToggle={toggleDetail}
+                                    onDelete={handleDelete}
+                                />
+                            </Col>
+                        ))}
+                    </Row>
+                </Col>
             </Row>
-            </Col>
-        </Row>
+
+            <AddAccountModal
+                show={showModal}
+                onHide={() => setShowModal(false)}
+                cardType={cardType}
+                onAdd={handleAddAccount}
+                existingIds={accounts.map(acc => acc.id)}
+            />
         </>
     );
-    }
+}

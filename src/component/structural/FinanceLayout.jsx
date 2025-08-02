@@ -52,7 +52,6 @@ export default function FinanceLayout() {
             }
             <Nav.Link as={Link} to="/accounts" onClick={() => setMenuOpen(false)}>Accounts</Nav.Link>
             <Nav.Link as={Link} to="/transactions" onClick={() => setMenuOpen(false)}>Transactions</Nav.Link>
-            <Nav.Link as={Link} to="/charts" onClick={() => setMenuOpen(false)}>Spending Chart</Nav.Link>
           </Nav>
         </Offcanvas.Body>
       </Offcanvas>
