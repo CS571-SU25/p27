@@ -3,11 +3,17 @@ import { Card, Button } from "react-bootstrap";
 
 export default function TransactionCard({ transaction, onDelete }) {
   const date = new Date(transaction.date);
-  const formattedDate = date.toLocaleDateString("en-US", {
+  const formattedDate = date.toLocaleString("en-US", {
     year: "numeric",
     month: "short",
-    day: "numeric"
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
   });
+
+  const isDeposit = transaction.type === 'deposit';
+  const amountColor = isDeposit ? "text-success" : "text-danger";
+  const sign = isDeposit ? "+" : "-";
 
   return (
     <Card className="mb-3">
@@ -19,7 +25,7 @@ export default function TransactionCard({ transaction, onDelete }) {
           </Button>
         </Card.Title>
         <Card.Subtitle className="mb-2 text-muted">
-          {formattedDate} | {transaction.currency} {parseFloat(transaction.amount).toFixed(2)}
+          {formattedDate} | <span className={amountColor}>{sign} {transaction.currency} {parseFloat(transaction.amount).toFixed(2)}</span>
         </Card.Subtitle>
         <Card.Text>
           <b>Payment Method:</b> {transaction.method}

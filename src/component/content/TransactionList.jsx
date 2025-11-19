@@ -38,7 +38,7 @@ export default function TransactionList() {
     function handleAdd(transaction) {
         setTransactions(prev => [transaction, ...prev]);
 
-        const { method, amount, currency } = transaction;
+        const { method, amount, currency, type } = transaction;
 
         setAccounts(prevAccounts => {
             const updated = prevAccounts.map(acc => {
@@ -58,11 +58,19 @@ export default function TransactionList() {
                 }
 
                 if (acc.type === "debit") {
-                    const newAmount = parseFloat(acc.amount || 0) - adjustedAmount;
+                    // Expense: Subtract, Deposit: Add
+                    const currentAmount = parseFloat(acc.amount || 0);
+                    const newAmount = type === 'deposit'
+                        ? currentAmount + adjustedAmount
+                        : currentAmount - adjustedAmount;
                     return { ...acc, amount: newAmount.toFixed(2) };
                 } else if (acc.type === "credit") {
-                    const used = parseFloat(acc.usedCredit || 0) + adjustedAmount;
-                    return { ...acc, usedCredit: used.toFixed(2) };
+                    // Expense: Increase Debt, Deposit: Pay Debt (Decrease Debt)
+                    const currentDebt = parseFloat(acc.usedCredit || 0);
+                    const newDebt = type === 'deposit'
+                        ? Math.max(0, currentDebt - adjustedAmount)
+                        : currentDebt + adjustedAmount;
+                    return { ...acc, usedCredit: newDebt.toFixed(2) };
                 }
 
                 return acc;
@@ -79,7 +87,7 @@ export default function TransactionList() {
 
         setTransactions(prev => prev.filter(tx => tx.id !== id));
 
-        const { method, amount, currency } = txToDelete;
+        const { method, amount, currency, type } = txToDelete;
 
         setAccounts(prevAccounts => {
             const updated = prevAccounts.map(acc => {
@@ -96,11 +104,19 @@ export default function TransactionList() {
                 }
 
                 if (acc.type === "debit") {
-                    const restored = parseFloat(acc.amount || 0) + adjustedAmount;
-                    return { ...acc, amount: restored.toFixed(2) };
+                    // Reverse logic
+                    const currentAmount = parseFloat(acc.amount || 0);
+                    const newAmount = type === 'deposit'
+                        ? currentAmount - adjustedAmount // Undo deposit
+                        : currentAmount + adjustedAmount; // Undo expense
+                    return { ...acc, amount: newAmount.toFixed(2) };
                 } else if (acc.type === "credit") {
-                    const restored = parseFloat(acc.usedCredit || 0) - adjustedAmount;
-                    return { ...acc, usedCredit: Math.max(0, restored).toFixed(2) };
+                    // Reverse logic
+                    const currentDebt = parseFloat(acc.usedCredit || 0);
+                    const newDebt = type === 'deposit'
+                        ? currentDebt + adjustedAmount // Undo payment
+                        : Math.max(0, currentDebt - adjustedAmount); // Undo expense
+                    return { ...acc, usedCredit: newDebt.toFixed(2) };
                 }
 
                 return acc;
